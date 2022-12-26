@@ -1,0 +1,5 @@
+.idea/
+tensorboard_summary/
+venv/
+data/
+model/
