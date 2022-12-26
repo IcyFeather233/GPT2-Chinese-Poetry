@@ -7,8 +7,7 @@ import transformers
 from torch.utils.tensorboard import SummaryWriter
 import numpy as np
 from tqdm import tqdm
-
-from transformers import tokenization_bert
+from transformers.models.bert import tokenization_bert
 
 
 def build_files(data_path: str, tokenized_data_path: str, num_pieces: int,
@@ -91,7 +90,7 @@ def main():
     print('using device:', device)
 
     # 这里用的是transformers最新的gpt2包
-    model_config = transformers.modeling_gpt2.GPT2Config.from_json_file(args.model_config)
+    model_config = transformers.models.gpt2.GPT2Config.from_json_file(args.model_config)
     print('config:\n' + model_config.to_json_string())
 
     # 样本的长度限制
@@ -129,9 +128,9 @@ def main():
 
     # 如果设置了预训练模型就读取，如果没有就按照模型初始默认设置
     if not args.pretrained_model:
-        model = transformers.modeling_gpt2.GPT2LMHeadModel(config=model_config)
+        model = transformers.models.gpt2.GPT2LMHeadModel(config=model_config)
     else:
-        model = transformers.modeling_gpt2.GPT2LMHeadModel.from_pretrained(args.pretrained_model)
+        model = transformers.models.gpt2.GPT2LMHeadModel.from_pretrained(args.pretrained_model)
     # 设置为训练模式
     model.train()
     model.to(device)
@@ -152,8 +151,9 @@ def main():
     print('total steps = {}'.format(total_steps))
 
     optimizer = transformers.AdamW(model.parameters(), lr=lr, correct_bias=True)
-    scheduler = transformers.WarmupLinearSchedule(optimizer, warmup_steps=warmup_steps,
-                                                  t_total=total_steps)
+    scheduler = transformers.get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps,
+                                                             num_training_steps=total_steps)
+
     print('start training')
     overall_step = 0
     running_loss = 0

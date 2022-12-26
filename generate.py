@@ -3,7 +3,8 @@ import torch.nn.functional as F
 import os
 import argparse
 from tqdm import trange
-from transformers import GPT2LMHeadModel, tokenization_bert
+from transformers import GPT2LMHeadModel
+from transformers.models.bert import tokenization_bert
 
 
 def is_word(word):
