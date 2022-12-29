@@ -121,6 +121,65 @@ def generate(n_ctx, model, context, length, tokenizer, temperature=1, top_k=0, t
         return sample_sequence(model, context, length, n_ctx, tokenizer=tokenizer, temperature=temperature, top_k=top_k, top_p=top_p,
                                repitition_penalty=repitition_penalty, device=device)
 
+def gen_sample(args):
+    """
+    返回生成结果的列表
+    :param args: 和 train.py 一样的参数
+    :return: 生成诗歌结果的列表
+    """
+    length = args.length
+    batch_size = args.batch_size
+    nsamples = args.nsamples
+    temperature = args.temperature
+    topk = args.topk
+    topp = args.topp
+    repetition_penalty = args.repetition_penalty
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    tokenizer = tokenization_bert.BertTokenizer(vocab_file=args.tokenizer_path)
+    model = GPT2LMHeadModel.from_pretrained(args.model_path)
+    model.to(device)
+    model.eval()
+
+    n_ctx = model.config.n_ctx
+
+    if length == -1:
+        length = model.config.n_ctx
+
+    output = []
+
+    while True:
+        raw_text = args.prefix
+        context_tokens = tokenizer.convert_tokens_to_ids(tokenizer.tokenize(raw_text))
+        generated = 0
+        for _ in range(nsamples // batch_size):
+            out = generate(
+                n_ctx=n_ctx,
+                model=model,
+                context=context_tokens,
+                length=length,
+                is_fast_pattern=args.fast_pattern, tokenizer=tokenizer,
+                temperature=temperature, top_k=topk, top_p=topp, repitition_penalty=repetition_penalty, device=device
+            )
+            for i in range(batch_size):
+                generated += 1
+                text = tokenizer.convert_ids_to_tokens(out)
+                for i, item in enumerate(text[:-1]):  # 确保英文前后有空格
+                    if is_word(item) and is_word(text[i + 1]):
+                        text[i] = item + ' '
+                for i, item in enumerate(text):
+                    if item == '[MASK]':
+                        text[i] = ''
+                    elif item == '[CLS]':
+                        text[i] = '\n\n'
+                    elif item == '[SEP]':
+                        text[i] = '\n'
+                text = ''.join(text).replace('##', '').strip()
+                output.append(text)
+        if generated == nsamples:
+            break
+    return output
 
 def main():
     parser = argparse.ArgumentParser()
