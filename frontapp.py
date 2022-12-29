@@ -19,7 +19,7 @@ def writer():
     st.sidebar.subheader("配置参数")
 
     option = st.sidebar.selectbox(
-        'Which number do you like best?',
+        '诗歌格式',
         ['五言绝句', '五言律诗', '七言绝句', '七言律诗'])
 
     num = st.sidebar.number_input('生成诗歌数量', min_value=1, max_value=10, step=1)
@@ -29,18 +29,23 @@ def writer():
 
     if option == '五言绝句':
         title_num = 4
-        full_length = 26
     elif option == '五言律诗':
         title_num = 8
-        full_length = 50
     elif option == '七言绝句':
         title_num = 4
-        full_length = 34
     else:
         title_num = 8
-        full_length = 65
 
-    title = st.sidebar.text_input('藏头字', placeholder='填入对应诗歌格式的藏头字数量：{}个字'.format(title_num))
+    title = st.sidebar.text_input('藏头字', placeholder='对应格式的藏头字数量：最多{}个字'.format(title_num))
+
+    if option == '五言绝句':
+        full_length = 26 + (4 - len(title))
+    elif option == '五言律诗':
+        full_length = 50 + (8 - len(title))
+    elif option == '七言绝句':
+        full_length = 34 + (4 - len(title))
+    else:
+        full_length = 65 + (8 - len(title))
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--length', default=full_length, type=int, help='生成文本长度')
