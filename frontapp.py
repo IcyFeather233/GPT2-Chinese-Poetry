@@ -11,6 +11,9 @@ def subprocess_getoutput(stmt):
 
 
 def writer():
+    st.set_page_config(
+        page_title="古诗生成 DEMO"
+    )
     st.markdown(
         """
         ## 古诗生成 DEMO
@@ -67,12 +70,12 @@ def writer():
 
     if st.button("点击开始生成"):
         start_message = st.empty()
-        start_message.write("正在抽取，请等待...")
+        start_message.write("正在作诗，请等待...")
         start_time = time.time()
         content = gen_sample(args)
         print(content)
         end_time = time.time()
-        start_message.write("抽取完成，耗时{}s".format(end_time - start_time))
+        start_message.write("作诗完成，耗时{}s".format(end_time - start_time))
         for i in range(num):
             st.text("第{}个结果".format(i + 1))
             st.text(content[i])
